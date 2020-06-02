@@ -1,0 +1,27 @@
+{
+  "name": "second-app",
+  "version": "1.0.0",
+  "description": "testing....",
+  "main": "index.js",
+  "scripts": {
+    "client": "cd client && npm start",
+    "server": "cd server && npm start",
+    "start": "concurrently - kill-others \"npm run server\" \"npm run client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Santhamani/React-Node.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Santhamani/React-Node/issues"
+  },
+  "homepage": "https://github.com/Santhamani/React-Node#readme",
+  "dependencies": {
+    "concurrently": "^5.2.0",
+    "lodash": "^4.17.15"
+  },
+  "devDependencies": {}
+}
