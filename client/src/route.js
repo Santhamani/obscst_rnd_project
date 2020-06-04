@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Route, Switch, useParams } from "react-router-dom";
+import { Route, Switch, useParams, Redirect } from "react-router-dom";
 import Home from "./container/home";
 import Login from "./container/Login";
 import NotFound from "./container/NotFound";
@@ -9,6 +9,7 @@ import Signup from "./container/signup";
 import Test from "./container/Test";
 import Profile from "./container/profile";
 import Continent from './container/continent';
+import Logout from "./container/logout";
 
 class Routes extends React.Component {
   constructor(props){
@@ -35,12 +36,15 @@ class Routes extends React.Component {
     <Route exact path="/profile">
         <Profile />
     </Route>
+    <Route exact path="/logout">
+        <Logout />
+    </Route>
     <Route exact path="/continent/:name" render={(props) => <Continent {...props} isAuthed={true} />} />
         {/* <Continent /> */}
     {/* </Route> */}
     {/* Finally, catch all unmatched routes */}
-    <Route>
-        <NotFound />
+    <Route exact path="*">
+        <Redirect to="/"><NotFound /></Redirect>
     </Route>
     </Switch>
   );

@@ -33,54 +33,69 @@ router.get('/', function(req, res, next) {
 //post for OTP
 router.post('/getotp', async function(req,res,next){
 	console.log(req.body);
-	var email = req.body.email;
-	var code = '';
-	var possible = "0123456789";
-	for (var i = 0; i < 8; i++){
-		code += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	db.query('SELECT email,phoneno from signin where email="'+req.body.email+'"', function(err,updatedata){
-		console.log("update", updatedata)
-		if(updatedata.length != 0){
-			db.query('UPDATE signin set otp="'+code+'" where email="'+req.body.email+'"', function(err,data){
-				if(err){
-					console.log(err)
-				}
-				else{
-					console.log("signin updated", code)
-				}
-			})
+	if(req.body.email == null || req.body.email == undefined || req.body.email == ''){
+		console.log("if", req.body.email)
+		return res.json({success: false, message: "Provide Email"});
+	} 
+	else {
+		console.log("else");
+		var email = req.body.email;
+		var code = '';
+		var possible = "0123456789";
+		for (var i = 0; i < 8; i++){
+			code += possible.charAt(Math.floor(Math.random() * possible.length));
 		}
-		else {
-			db.query('INSERT INTO SIGNIN(email,otp,phoneno) VALUES("'+req.body.email+'","'+code+'","'+req.body.phoneno+'")', function(err,insertdata){
-				if(err){
-					console.log(err)
+		db.query('SELECT email,phoneno from signin where email="'+req.body.email+'"', function(err,updatedata){
+			console.log("update", updatedata,req.body.email)
+			// if(req.body.email == null || req.body.email == undefined || req.body.email == ''){
+			// 	console.log("if", req.body.email)
+			
+			// } else {
+				
+				if(updatedata.length != 0){
+					db.query('UPDATE signin set otp="'+code+'" where email="'+req.body.email+'"', function(err,data){
+						if(err){
+							console.log(err)
+						}
+						else{
+							console.log("signin updated", code)
+						}
+					})
 				}
 				else {
-					console.log("signin table inserted")
+					db.query('INSERT INTO SIGNIN(email,otp,phoneno) VALUES("'+req.body.email+'","'+code+'","'+req.body.phoneno+'")', function(err,insertdata){
+						if(err){
+							console.log(err)
+						}
+						else {
+							console.log("signin table inserted")
+						}
+					})
 				}
-			})
+			// }	
+		})
+		var mailOptions={
+			from: 'OBSCST Registration',
+			to : email,
+			subject : "OBSCST OTP VERIFICATION PROCESS ",
+			// text: "Haii"
+			html : "Hello,<br>Please enter the OTP to complete the registration.<br><h2>"+code+"</h2>."
 		}
-	})
-    var mailOptions={
-        from: 'OBSCST Registration',
-        to : email,
-        subject : "OBSCST OTP VERIFICATION PROCESS ",
-        // text: "Haii"
-        html : "Hello,<br>Please enter the OTP to complete the registration.<br><h2>"+code+"</h2>."
-    }
-    console.log(mailOptions);
-    smtpTransport.sendMail(mailOptions, function(error, response){
-     if(error){
-            console.log(error);
-            // res.end("error");
-            res.json({success:false, message:"error"})
-     }else{
-            console.log("Message sent: " + response.message);
-            // res.end("sent");
-            res.json({success:true});
-         }
-    });
+		console.log(mailOptions);
+		smtpTransport.sendMail(mailOptions, function(error, response){
+		if(error){
+				console.log(error);
+				// res.end("error");
+				res.json({success:false, message:"error"})
+		}else{
+				console.log("Message sent: " + response.message);
+				// res.end("sent");
+				res.json({success:true});
+			}
+		});
+
+		}
+	
 })
 
 
@@ -95,10 +110,10 @@ let smtpTransport = nodemailer.createTransport({
 
 passport.serializeUser(function(user, done) {
 	console.log("user", user)
-	done(null, user.email);
+	done(null, user.mail);
 });
-passport.deserializeUser(function(email, done) {
-	db.query("SELECT * FROM sigin WHERE email = '"+email+"'", function(err, rows){
+passport.deserializeUser(function(mail, done) {
+	db.query("SELECT * FROM sigin WHERE email = '"+mail+"'", function(err, rows){
 	  done(err, rows[0]);
 	});
 });
@@ -135,6 +150,7 @@ router.post('/login', function(req, res){
 		}else{
 		  req.logIn(user, function(err){
 			  console.log("authi", req.logIn)
+			  return res.json({success: true, email: user.email});
 		// 	var username = req.body.username;
 		// 	var password = md5(req.body.password);
 		// 	db.query("SELECT onlineindication FROM register WHERE uname= '"+username+"' AND pswd = '"+password+"'", function(err, data){
