@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Redirect } from "react-router-dom"
+import { Redirect, Link } from "react-router-dom"
 
 
 
@@ -48,6 +48,7 @@ class Profile extends React.Component {
         return(
             <div>
                 User Profile
+                <Link to="/logout">Logout</Link>
             </div>
         )
     }

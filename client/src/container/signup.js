@@ -3,13 +3,19 @@ import React,{ Component } from "react";
 import { Button, FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import './signup.css'
 import { render } from "react-dom";
-import { Link, Redirect } from "react-router-dom";
+import { Link, Redirect, withRouter } from "react-router-dom";
 
 
 class SignUp extends React.Component{
 
     constructor(props){
-        let isLoggedIn = false;
+        // let isLoggedIn = false;
+        let isLoggedIn = true;
+        const token = localStorage.getItem("token");
+
+        if(token === null){
+            isLoggedIn = false
+        }
         super(props)
         this.state = {
             fname: '',
@@ -19,6 +25,8 @@ class SignUp extends React.Component{
             uname : '',
             phoneno : '1234567890',
             otp: '',
+            isLoggedIn,
+            // errMsg,
         }   
 
         this.setFirstName = this.setFirstName.bind(this);
@@ -75,14 +83,29 @@ class SignUp extends React.Component{
             body: JSON.stringify(data)
         };
         fetch('http://localhost:8080/users/getotp', requestOptions)
+            .then(response => 
+            response.json())
             .then(response => {
-                const data = response.json();
+                // const data = response.json();
+                console.log("mail verification",response)
+                var errMsg = response.message;
+                this.setState({
+                    errMsg : errMsg
+                })
+                setTimeout(
+                    function() {
+                        this.setState({errMsg: ''});
+                    }
+                    .bind(this),
+                    3000
+                );
+                console.log(errMsg)
                 // check for error response
-                if (!response.ok) {
-                    // get error message from body or default to response status
-                    const error = (data && data.message) || response.status;
-                    return Promise.reject(error);
-                }
+                // if (!response.ok) {
+                //     // get error message from body or default to response status
+                //     const error = (data && data.message) || response.status;
+                //     return Promise.reject(error);
+                // }
     
                 this.setState({ email: data.email })
             })
@@ -110,25 +133,52 @@ class SignUp extends React.Component{
         body: JSON.stringify(data)
         };
         fetch('http://localhost:8080/users/login', reqOptions)
-        .then(response => {
-            const data = response.json();
-            // check for error response
-            if (!response.ok) {
-                // get error message from body or default to response status
-                const error = (data && data.message) || response.status;
-                return Promise.reject(error);
-            }
-            localStorage.setItem("token","jkhkhkjhsiuyeiqwe8q37")
-            this.setState({
-                isLoggedIn: true
-            })
-            this.setState({ otp: data.otp })
+        // .then(dataWrappedByPromise => dataWrappedByPromise.json())
+        // .then(data => {
+        // // you can access your data here
+        // console.log(data)
+        
+        .then(response => 
+            response.json())
+            // console.log("json", response)
+            // if (!response.ok) {
+            //         // get error message from body or default to response status
+            //         const error = (data && data.message) || response.status;
+            //         return Promise.reject(error);
+            //     }
+            // )
+            .then(data => {
+            console.log("res", data);
+            // var succesMsg = "You are scuccefully logged in";
+            // console.log(successMsg)
+                // this.setState({succesMsg:successMsg})
+                this.setState({ otp: data.otp })
+                if(data.success){
+                    console.log("success", data.success);
+                    localStorage.setItem("token", "hkhdkshdkasj3984390580985")
+                    this.setState({
+                        isLoggedIn: true,
+                            // email:lemail,
+                            // otp:lotp
+                    })
+                }
+                // this.props.history.push("/profile");
+                
+                    
         })
+        
         .catch(error => {
             this.setState({ errorMessage: error.toString() });
             console.error('There was an error!', error);
         });
+
         event.preventDefault();
+        // if(email === "email" && otp === "123"){
+        //     localStorage.setItem("token","jkhkhkjhsiuyeiqwe8q37")
+        //     this.setState({
+        //         isLoggedIn: true
+        //     })
+        // }
     }
 
     // validateForm(){
@@ -138,7 +188,8 @@ class SignUp extends React.Component{
     
 
 render(){
-    if(this.state.isLoggedIn){
+    const { email, otp, errMsg, succesMsg } = this.state;
+    if(this.state.isLoggedIn) {
         return <Redirect to='/profile' />
     }
     // const { email, fname, uname, password} = this.state;
@@ -160,6 +211,7 @@ render(){
                 <Button bsSize="small" pullRight type="submit" onClick={this.handleFormSubmit}>
                     Get Otp
                 </Button>
+        <span>{errMsg}</span>
                 <br></br>
                 <ControlLabel>OTP</ControlLabel>
                 <FormControl
